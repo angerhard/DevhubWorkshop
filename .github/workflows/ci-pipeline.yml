@@ -6,7 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  solutionPath: "../src/ShoppingCart.sln";
+
+
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +29,7 @@ jobs:
 
       # Restore packages
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore ${{ env.solutionPath }}
       
       - name: Build
         run: dotnet build ../src/ShoppingCart.sln --configuration Release --no-restore

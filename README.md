@@ -5,12 +5,23 @@ https://github.com/marketplace?type=actions
 
 Create an action with the yml file at .github/workflows/ci-pipeline.yml
 This file already has the basic steps (install .net, package restore ect)
+
+# Code setup
+1. Implement git version
+   GitVersion automatically generates consistent semantic version numbers from your Git history, removing manual versioning and ensuring every build and artifact is uniquely and predictably versioned.
+
+   Documentation: https://gitversion.net/docs/
+   You can either chose to implement this through your pipeline or add as a nuget library to the ShoppingCart application
+   
  
-Code quality and testing
+# Code quality and testing
 1. Run the tests
+   You can find documentation here: https://docs.github.com/en/actions/tutorials/build-and-test-code/net
 
 2. Implement linting
-   You can use JetBrains.ReSharper.GlobalTools
+
+   Hint to this task:
+   You can use JetBrains.ReSharper.GlobalTools if you run a powershell script in your pipeline
    Output the insepction to a jsonfile
    In a seperate action, use the analyzation script found under .github/scripts to analyze the findings from the inspection
 
@@ -20,11 +31,11 @@ Code quality and testing
    Follow the guide provided in SonarQube
    Hint: Sonar token can be created here: User > My Account > Security
 
-Dependencies
+# Dependencies
 TODO: write dependecies task.
 Test the setup with creating sbom file and push it to the server
 
-Security scanning 
+# Security scanning 
 1. Implement Git leaks
    You can use github's own action for this: https://github.com/marketplace/actions/gitleaks
    If you find any vulnerabilties in the ShoppingCart application - fix them!

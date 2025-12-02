@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using ShoppingCart.DataSourcing;
 
@@ -42,6 +43,15 @@ public class CartController :ControllerBase
     [HttpGet("/cart")]
     public async Task<IActionResult> GetCart([FromQuery] string userEmail)
     {
+        
+        string emailPattern = @"^([a-zA-Z0-9]+([\.-]?[a-zA-Z0-9]+)*([\+]?[a-zA-Z0-9]+([\.-]?[a-zA-Z0-9]+)*)?)*@([a-zA-Z0-9]+([\.-]?[a-zA-Z0-9]+)*)+\.([a-zA-Z]{2,})+$";
+
+        // Using Regex.IsMatch without timeout - can hang the thread indefinitely
+        if (!Regex.IsMatch(userEmail, emailPattern))
+        {
+            return BadRequest("Invalid email format");
+        }
+        
         var userShoppingItems = _memoryCachingService.GetShoppingItems(userEmail);
         if (userShoppingItems == null)
         {

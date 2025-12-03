@@ -27,6 +27,13 @@ jobs:
         with:
           dotnet-version: "9.0.x" # or 7.0.x / 6.0.x etc.
 
+      # Install gitversion
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4.2.0
+        with:
+          versionSpec: '6.4.x'
+          preferLatestVersion: true
+
       # Restore packages
       - name: Restore dependencies
         run: dotnet restore ${{ env.solutionPath }}

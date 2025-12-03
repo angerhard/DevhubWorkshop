@@ -37,7 +37,13 @@ jobs:
       # Restore packages
       - name: Restore dependencies
         run: dotnet restore ${{ env.solutionPath }}
-      
+
+      - name: Determine Version
+        id: version_step # step id used as a reference for output values
+        uses: gittools/actions/gitversion/execute@v4.2.0
+        with:
+          updateProjectFiles: true
+          
       - name: Build
         run: dotnet build ${{ env.solutionPath }} --configuration Release --no-restore
       
@@ -82,3 +88,5 @@ jobs:
           & $scannerExe `
             'end' `
             "/d:sonar.token=$env:SONAR_TOKEN"
+          
+               

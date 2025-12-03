@@ -27,10 +27,66 @@ jobs:
         with:
           dotnet-version: "9.0.x" # or 7.0.x / 6.0.x etc.
 
+      # Install gitversion
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4.2.0
+        with:
+          versionSpec: '6.4.x'
+          preferLatestVersion: true
+
       # Restore packages
       - name: Restore dependencies
         run: dotnet restore ${{ env.solutionPath }}
-      
+
+      - name: Determine Version
+        id: version_step # step id used as a reference for output values
+        uses: gittools/actions/gitversion/execute@v4.2.0
+        with:
+          updateProjectFiles: true
+          
       - name: Build
         run: dotnet build ${{ env.solutionPath }} --configuration Release --no-restore
       
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $scannerPath = Join-Path $env:RUNNER_TEMP "scanner"
+          New-Item -Path $scannerPath -ItemType Directory -Force | Out-Null
+          dotnet tool update dotnet-sonarscanner --tool-path $scannerPath
+
+      - name: Build and analyze
+        shell: pwsh
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          $scannerPath = Join-Path $env:RUNNER_TEMP "scanner"
+          $scannerExe  = Join-Path $scannerPath "dotnet-sonarscanner"
+
+          Write-Host "Using scanner at: $scannerExe"
+
+          # 1) BEGIN – note: 'begin' is a separate argument
+          & $scannerExe `
+            'begin' `
+            "/k:ShoppingCart" `
+            "/d:sonar.host.url=$env:SONAR_HOST_URL" `
+            "/d:sonar.token=$env:SONAR_TOKEN"
+
+          # 2) BUILD – same working directory as 'begin'
+          dotnet build $env:solutionPath
+
+          # 3) END – again 'end' is a separate argument
+          & $scannerExe `
+            'end' `
+            "/d:sonar.token=$env:SONAR_TOKEN"
+          
+               
